@@ -1,1 +1,68 @@
 # HUJI_OS_EX1
+
+# QUESTION 1
+
+PART A
+
+- sigsetjmp(sigjmp_buf env, int savesign)
+  This function saves the stack context and CPU state within the sigjmp_buf struct. Essentially, it bookmarks a section of
+  code to return to later in the program's execution. When directly called, it returns 0, but if called with siglongjmp,
+  it returns a user-defined value.
+
+- siglongjmp(sigjmp_buf env, int val)
+  This function jumps to a specified code location and restores the CPU state indicated by env. This jump takes the
+  program back to where sigsetjmp was called. The return value of sigsetjmp after arriving from siglongjmp will be the
+  user-defined val.
+
+PART B
+
+In sigsetjmp, the savesigs parameter determines whether to save the signal mask. If savesigs is 0, the current signal
+mask isn't saved. If it's non-zero, the signal mask is saved.
+If the signal mask was saved in sigsetjmp, then siglongjmp will also restore it when called.
+
+# QUESTION 2
+
+For a web server, handling multiple requests together is crucial. We can assign a thread to each request, allowing us
+to manage them concurrently. This setup offers flexibility in scheduling threads based on priority if needed. Since
+requests mainly involve computational tasks like loading and sending files, the risk of one thread blocking others due
+to I/O operations is low. Moreover, user-level threads provide low overhead during context switching, enhancing the
+server's responsiveness.
+
+# QUESTION 3
+
+ADVANTAGES
+
+- Isolation: Each tab operates within its own process, ensuring that if one tab crashes, it doesn't affect the others.
+- Security: With separate memory spaces for each tab, security is enhanced as attackers cannot easily access the memory
+  of other tabs.
+- Independent Memory Space: Memory leaks in one tab do not impact the performance of other tabs.
+
+DISADVANTAGES
+
+- High Overhead: Switching between tabs incurs a higher overhead as it involves switching between processes, which
+  takes more time compared to switching between kernel-level threads.
+- Complex Inter-Process Communication (IPC): IPC mechanisms between processes are more complex than managing
+  kernel-level threads, increasing system complexity.
+- Slow Process Creation: Creating a new process is generally slower than creating a new thread, leading to higher
+  overhead in setting up new memory spaces and resources.
+
+# QUESTION 4
+
+When typing the kill command in the shell with the PID of Shotwell (90757), several interrupts and signals occur.
+Firstly, each character typed on the keyboard generates an external interrupt, which the operating system handles and
+passes to the shell. After entering the command, pressing the Enter key triggers the execution.
+The shell then displays the input buffer and parses the kill command.
+Upon activation, the operating system sends a SIGTERM signal to the process with the specified ID (PID 90757),
+initiating termination.
+If Shotwell hasn't defined a custom handler for the SIGTERM signal, the kernel terminates the process.
+
+# Question 5
+
+'Real Time' refers to the actual elapsed time from the start to the completion of a process, as measured by a clock.
+'Virtual Time' refers to the time a process spends actively executing on the CPU, excluding any waiting periods or
+idle time.
+
+For example, when sending a document to the printer, 'Real Time' is the total time from the moment the print job is
+initiated until it is fully completed, as measured by a physical clock. In contrast, 'Virtual Time' in this scenario
+refers to the CPU time used by the computer or printer to process the print job, excluding any time the process spends
+waiting in the print queue or being idle.
