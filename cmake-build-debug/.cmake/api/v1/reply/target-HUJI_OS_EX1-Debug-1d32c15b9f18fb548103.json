@@ -88,7 +88,9 @@
 			},
 			"sourceIndexes" : 
 			[
-				3
+				3,
+				7,
+				8
 			]
 		}
 	],
@@ -124,14 +126,18 @@
 				0,
 				1,
 				2,
-				3
+				3,
+				7,
+				8
 			]
 		},
 		{
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
-				4
+				4,
+				5,
+				6
 			]
 		}
 	],
@@ -165,6 +171,28 @@
 			"backtrace" : 1,
 			"path" : "uthreads.h",
 			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "ThreadsManager.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Thread.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "Thread.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "ThreadsManager.cpp",
+			"sourceGroupIndex" : 0
 		}
 	],
 	"type" : "EXECUTABLE"
