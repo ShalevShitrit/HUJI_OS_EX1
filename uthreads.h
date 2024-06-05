@@ -7,7 +7,10 @@
 #define _UTHREADS_H
 
 
+#define MAX_THREAD_NUM 100 /* maximal number of threads */
+#define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
+typedef void (*thread_entry_point)(void);
 
 /* External interface */
 
@@ -15,7 +18,7 @@
 /**
  * @brief initializes the thread library.
  *
- * Once this function returns, the main thread (tid == 0) will be set as RUNNING. There is no need to 
+ * Once this function returns, the main thread (tid == 0) will be set as RUNNING. There is no need to
  * provide an entry_point or to create a stack for the main thread - it will be using the "regular" stack and PC.
  * You may assume that this function is called before any other thread library function, and that it is called
  * exactly once.
@@ -24,7 +27,7 @@
  *
  * @return On success, return 0. On failure, return -1.
 */
-int uthread_init (int quantum_usecs);
+int uthread_init(int quantum_usecs);
 
 /**
  * @brief Creates a new thread, whose entry point is the function entry_point with the signature
@@ -38,7 +41,8 @@ int uthread_init (int quantum_usecs);
  *
  * @return On success, return the ID of the created thread. On failure, return -1.
 */
-int uthread_spawn (thread_entry_point entry_point);
+int uthread_spawn(thread_entry_point entry_point);
+
 
 /**
  * @brief Terminates the thread with ID tid and deletes it from all relevant control structures.
@@ -50,7 +54,8 @@ int uthread_spawn (thread_entry_point entry_point);
  * @return The function returns 0 if the thread was successfully terminated and -1 otherwise. If a thread terminates
  * itself or the main thread is terminated, the function does not return.
 */
-int uthread_terminate (int tid);
+int uthread_terminate(int tid);
+
 
 /**
  * @brief Blocks the thread with ID tid. The thread may be resumed later using uthread_resume.
@@ -61,7 +66,8 @@ int uthread_terminate (int tid);
  *
  * @return On success, return 0. On failure, return -1.
 */
-int uthread_block (int tid);
+int uthread_block(int tid);
+
 
 /**
  * @brief Resumes a blocked thread with ID tid and moves it to the READY state.
@@ -71,14 +77,15 @@ int uthread_block (int tid);
  *
  * @return On success, return 0. On failure, return -1.
 */
-int uthread_resume (int tid);
+int uthread_resume(int tid);
+
 
 /**
  * @brief Blocks the RUNNING thread for num_quantums quantums.
  *
  * Immediately after the RUNNING thread transitions to the BLOCKED state a scheduling decision should be made.
  * After the sleeping time is over, the thread should go back to the end of the READY queue.
- * If the thread which was just RUNNING should also be added to the READY queue, or if multiple threads wake up 
+ * If the thread which was just RUNNING should also be added to the READY queue, or if multiple threads wake up
  * at the same time, the order in which they're added to the end of the READY queue doesn't matter.
  * The number of quantums refers to the number of times a new quantum starts, regardless of the reason. Specifically,
  * the quantum of the thread which has made the call to uthread_sleep isn’t counted.
@@ -86,14 +93,16 @@ int uthread_resume (int tid);
  *
  * @return On success, return 0. On failure, return -1.
 */
-int uthread_sleep (int num_quantums);
+int uthread_sleep(int num_quantums);
+
 
 /**
  * @brief Returns the thread ID of the calling thread.
  *
  * @return The ID of the calling thread.
 */
-int uthread_get_tid ();
+int uthread_get_tid();
+
 
 /**
  * @brief Returns the total number of quantums since the library was initialized, including the current quantum.
@@ -103,7 +112,8 @@ int uthread_get_tid ();
  *
  * @return The total number of quantums.
 */
-int uthread_get_total_quantums ();
+int uthread_get_total_quantums();
+
 
 /**
  * @brief Returns the number of quantums the thread with ID tid was in RUNNING state.
@@ -114,6 +124,7 @@ int uthread_get_total_quantums ();
  *
  * @return On success, return the number of quantums of the thread with ID tid. On failure, return -1.
 */
-int uthread_get_quantums (int tid);
+int uthread_get_quantums(int tid);
+
 
 #endif

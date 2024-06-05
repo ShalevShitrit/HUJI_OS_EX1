@@ -10,4 +10,4 @@ add_executable(HUJI_OS_EX1
         demo_jmp.c
         demo_singInt_handler.c
         uthreads.cpp
-        uthreads.h ThreadsManager.h Thread.h Thread.cpp ThreadsManager.cpp)
+        uthreads.h)
