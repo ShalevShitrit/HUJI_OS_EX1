@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o  -o HUJI_OS_EX1 

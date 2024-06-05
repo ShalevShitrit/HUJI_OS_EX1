@@ -14,7 +14,7 @@
 
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
-typedef void (*thread_entry_point) (void);
+typedef void (*thread_entry_point)(void);
 
 #define SECOND 1000000
 #define FAILURE_RETURN_VALUE (-1)
@@ -39,19 +39,19 @@ typedef void (*thread_entry_point) (void);
 #define INVALID_TID_ERROR_MSG "no thread with ID tid exists."
 #define SIGEMPTYSET_ERROR_MSG "sigemptyset error."
 
-typedef void (*thread_entry_point) (void);
+typedef void (*thread_entry_point)(void);
 
 typedef unsigned long address_t;
 
 //TODO need 32 and 64???
-address_t translate_address (address_t addr)
+address_t translate_address(address_t addr)
 {
-  address_t ret;
-  asm volatile("xor    %%fs:0x30,%0\n"
-               "rol    $0x11,%0\n"
-      : "=g" (ret)
-      : "0" (addr));
-  return ret;
+    address_t ret;
+    asm volatile("xor    %%fs:0x30,%0\n"
+        "rol    $0x11,%0\n"
+        : "=g" (ret)
+        : "0" (addr));
+    return ret;
 }
 
 /**** THREAD STRUCT ****/
@@ -67,17 +67,19 @@ typedef struct Thread
 {
     unsigned int id;
     thread_state state;
-    char *stack;
-    //int quantum; // TODO need??
+    char* stack;
+    int quantum; // TODO need??
     sigjmp_buf env;
 } Thread;
 
 /********************* GLOBAL VARIABLES *********************/
 
 //typedef std::vector<Thread *> threads_vector;
-
+// quantom vars
+int total_quantom = 0;
+int quantom_len;
 // all threads
-std::vector<Thread *> threads (MAX_THREAD_NUM, nullptr);
+std::vector<Thread*> threads(MAX_THREAD_NUM, nullptr);
 
 // TODO init
 std::priority_queue<int, std::vector<int>, std::greater<>> min_heap_id;
@@ -91,264 +93,268 @@ int curr_thread_id; // (-1) if null
 
 /********************* FUNCTIONS IMPLEMENTATION *********************/
 
-void init_min_heap_id ()
+void init_min_heap_id()
 {
-  // initialize the id min heap (id from 0 to 99)
-  for (int i = 0; i < MAX_THREAD_NUM; ++i)
-  {
-    min_heap_id.push (i);
-  }
+    // initialize the id min heap (id from 0 to 99)
+    for (int i = 0; i < MAX_THREAD_NUM; ++i)
+    {
+        min_heap_id.push(i);
+    }
 }
 
 // TODO need to free stack?
-void free_threads ()
+void free_threads()
 {
-  for (int i = 0; i < MAX_THREAD_NUM; ++i)
-  {
-    if (threads[i] != nullptr)
-      if (threads[i]->stack != nullptr)
-      {
-        free (threads[i]->stack);
-      }
-    free (threads[i]);
-  }
-}
-
-int get_min_available_id ()
-{
-  if (min_heap_id.empty ())
-  {
-    return FULL_THREADS;
-  }
-  int min_id = min_heap_id.top ();
-  min_heap_id.pop ();
-  return min_id;
-}
-
-void set_ready_to_run ()
-{
-  ready_threads.push (curr_thread_id);
-  curr_thread_id = ready_threads.front (); //TODO empty check ?
-  ready_threads.pop ();
-  siglongjmp (threads[curr_thread_id]->env, 1);
-}
-
-void timer_handler (int sig)
-{
-  int ret_val = sigsetjmp (threads[curr_thread_id]->env, 1);
-  bool did_just_save_bookmark = ret_val == 0;
-  if (did_just_save_bookmark)
-  {
-    // TODO
-    if (curr_thread_id != -1)
+    for (int i = 0; i < MAX_THREAD_NUM; ++i)
     {
-      set_ready_to_run ();
+        if (threads[i] != nullptr)
+            if (threads[i]->stack != nullptr)
+            {
+                free(threads[i]->stack);
+            }
+        free(threads[i]);
     }
-  }
 }
 
-int init_timer (int quantum_usecs)
+int get_min_available_id()
 {
-  struct sigaction sa = {0};
-  sa.sa_handler = &timer_handler;
-  if (sigaction (SIGVTALRM, &sa, nullptr) < 0)
-  {
-    std::cerr << SYSTEM_ERROR_PREFIX << SIGACTION_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
-
-  // first time interval seconds part
-  timer.it_value.tv_sec = quantum_usecs / SECOND;
-  // first time interval, microseconds part
-  timer.it_value.tv_usec = quantum_usecs % SECOND;
-
-  // following time intervals, seconds part
-  timer.it_interval.tv_sec = quantum_usecs / SECOND;
-  // following time intervals, microseconds part
-  timer.it_interval.tv_usec = quantum_usecs % SECOND;
-
-  if (setitimer (ITIMER_VIRTUAL, &timer, nullptr))
-  {
-    std::cerr << SYSTEM_ERROR_PREFIX << SETITIMER_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
-
-  return SUCCESS_RETURN_VALUE;
-}
-
-void remove_tid_from_ready_queue (const int &tid)
-{
-  std::queue<int> temp_queue;
-  while (!ready_threads.empty ())
-  {
-    if (ready_threads.front () != tid)
+    if (min_heap_id.empty())
     {
-      temp_queue.push (ready_threads.front ());
+        return FULL_THREADS;
     }
-    ready_threads.pop ();
-  }
-  std::swap (ready_threads, temp_queue);
+    int min_id = min_heap_id.top();
+    min_heap_id.pop();
+    return min_id;
 }
 
-int uthread_init (int quantum_usecs)
+void set_ready_to_run()
 {
-  // Check that quantum_usecs is positive values
-  if (quantum_usecs <= 0)
-  {
-    std::cerr << LIBRARY_ERROR_PREFIX << QUANTUM_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
+    ready_threads.push(curr_thread_id);
+    curr_thread_id = ready_threads.front(); //TODO empty check ?
+    ready_threads.pop();
 
-  Thread *main_thread = (Thread *) calloc (1, sizeof (Thread));
-  if (main_thread == nullptr)
-  {
-    std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
-    free_threads ();
-    exit (1);
-  }
+    siglongjmp(threads[curr_thread_id]->env, 1);
 
-  // Create the main thread
-  init_min_heap_id ();
-  int min_id = get_min_available_id (); // min_id = 0
-
-  // Initialize the main thread
-  main_thread->id = min_id;
-  main_thread->state = RUNNING;
-  threads[0] = main_thread;
-  curr_thread_id = 0;
-
-  // Initialize timer
-  int timer_check = init_timer (quantum_usecs);
-  if (timer_check == FAILURE_RETURN_VALUE)
-  {
-    free_threads ();
-    return FAILURE_RETURN_VALUE;
-  }
-
-  return SUCCESS_RETURN_VALUE;
 }
 
-int uthread_spawn (thread_entry_point entry_point)
+void timer_handler(int sig)
 {
-  if (entry_point == nullptr)
-  {
-    std::cerr << LIBRARY_ERROR_PREFIX << ENTRY_POINT_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
-
-  int new_id = get_min_available_id ();
-  if (new_id == FULL_THREADS)
-  {
-    std::cerr << LIBRARY_ERROR_PREFIX << FULL_THREADS_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
-
-  char *new_stack = (char *) (malloc (STACK_SIZE * sizeof (char)));
-  if (new_stack == nullptr)
-  {
-    std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
-    free_threads ();
-    exit (1);
-  }
-
-  Thread *new_thread = (Thread *) malloc (sizeof (Thread));
-  if (new_thread == nullptr)
-  {
-    free (new_stack);
-    std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
-    free_threads ();
-    exit (1);
-  }
-
-  new_thread->id = new_id;
-  new_thread->state = READY;
-  new_thread->stack = new_stack;
-
-  address_t sp = (address_t) new_stack + STACK_SIZE - sizeof (address_t);
-  address_t pc = (address_t) entry_point;
-
-  sigsetjmp (new_thread->env, 1);
-  (new_thread->env->__jmpbuf)[JB_SP] = translate_address (sp);
-  (new_thread->env->__jmpbuf)[JB_PC] = translate_address (pc);
-
-  if (sigemptyset (&new_thread->env->__saved_mask) == FAILURE_RETURN_VALUE)
-  {
-    // TODO forum question
-    std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
-    free_threads ();
-    exit (1);
-  }
-
-  threads[new_id] = new_thread;
-  ready_threads.push (new_id);
-
-  return new_id;
+    int ret_val = sigsetjmp(threads[curr_thread_id]->env, 1);
+    bool did_just_save_bookmark = ret_val == 0;
+    if (did_just_save_bookmark)
+    {
+        // TODO
+        if (curr_thread_id != -1)
+        {
+            set_ready_to_run();
+        }
+    }
+    threads[curr_thread_id] -> quantum++;
+    total_quantom++;
 }
 
-int uthread_terminate (int tid)
+int init_timer()
 {
-  // check tid validation
-  if (tid >= MAX_THREAD_NUM || threads[tid] == nullptr)
-  {
-    std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
-    return FAILURE_RETURN_VALUE;
-  }
+    struct sigaction sa = {0};
+    sa.sa_handler = &timer_handler;
+    if (sigaction(SIGVTALRM, &sa, nullptr) < 0)
+    {
+        std::cerr << SYSTEM_ERROR_PREFIX << SIGACTION_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
 
-  // check if it's the main thread
-  // TODO err msg need??
-  if (tid == 0)
-  {
-    free_threads ();
-    exit (0);
-  }
+    // first time interval seconds part
+    timer.it_value.tv_sec = quantom_len / SECOND;
+    // first time interval, microseconds part
+    timer.it_value.tv_usec = quantom_len % SECOND;
 
-  if (threads[tid]->state == READY)
-  {
-    remove_tid_from_ready_queue (tid);
-  }
+    // following time intervals, seconds part
+    timer.it_interval.tv_sec = quantom_len / SECOND;
+    // following time intervals, microseconds part
+    timer.it_interval.tv_usec = quantom_len % SECOND;
 
-  if (threads[tid]->state == RUNNING) // TODO can check with curr_thread_id too
-  {
+    if (setitimer(ITIMER_VIRTUAL, &timer, nullptr))
+    {
+        std::cerr << SYSTEM_ERROR_PREFIX << SETITIMER_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
 
-  }
-
-  // Terminates the thread with ID tid and deletes it from all structures
-  free (threads[tid]->stack);
-  threads[tid]->stack = nullptr;
-  free (threads[tid]);
-  threads[tid] = nullptr;
-
-  //
-  min_heap_id.push (tid);
-  return SUCCESS_RETURN_VALUE;
+    return SUCCESS_RETURN_VALUE;
 }
 
-int uthread_block (int tid)
+void remove_tid_from_ready_queue(const int& tid)
 {
-
+    std::queue<int> temp_queue;
+    while (!ready_threads.empty())
+    {
+        if (ready_threads.front() != tid)
+        {
+            temp_queue.push(ready_threads.front());
+        }
+        ready_threads.pop();
+    }
+    std::swap(ready_threads, temp_queue);
 }
 
-int uthread_resume (int tid)
+int uthread_init(int quantum_usecs)
 {
+    // Check that quantum_usecs is positive values
+    if (quantum_usecs <= 0)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << QUANTUM_ERROR_MSG << std::endl;
+        return FAILURE_RETURN_VALUE;
+    }
 
+
+    Thread* main_thread = (Thread*)calloc(1, sizeof(Thread));
+    if (main_thread == nullptr)
+    {
+        std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
+    quantom_len = quantum_usecs;
+    total_quantom = 1;
+
+    // Create the main thread
+    init_min_heap_id();
+    int min_id = get_min_available_id(); // min_id = 0
+
+    // Initialize the main thread
+    main_thread->id = min_id;
+    main_thread->state = RUNNING;
+    main_thread->quantum = 1;
+    threads[0] = main_thread;
+    curr_thread_id = 0;
+
+    // Initialize timer
+    init_timer();
+
+    return SUCCESS_RETURN_VALUE;
 }
 
-int uthread_sleep (int num_quantums)
+int uthread_spawn(thread_entry_point entry_point)
 {
+    if (entry_point == nullptr)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << ENTRY_POINT_ERROR_MSG << std::endl;
+        return FAILURE_RETURN_VALUE;
+    }
 
+    int new_id = get_min_available_id();
+    if (new_id == FULL_THREADS)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << FULL_THREADS_ERROR_MSG << std::endl;
+        return FAILURE_RETURN_VALUE;
+    }
+
+    char* new_stack = (char*)(malloc(STACK_SIZE * sizeof(char)));
+    if (new_stack == nullptr)
+    {
+        std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
+
+    Thread* new_thread = (Thread*)malloc(sizeof(Thread));
+    if (new_thread == nullptr)
+    {
+        free(new_stack);
+        std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
+
+    new_thread->id = new_id;
+    new_thread->state = READY;
+    new_thread->stack = new_stack;
+    new_thread->quantum = 0 ;
+    address_t sp = (address_t)new_stack + STACK_SIZE - sizeof(address_t);
+    address_t pc = (address_t)entry_point;
+
+    sigsetjmp(new_thread->env, 1);
+    (new_thread->env->__jmpbuf)[JB_SP] = translate_address(sp);
+    (new_thread->env->__jmpbuf)[JB_PC] = translate_address(pc);
+
+    if (sigemptyset(&new_thread->env->__saved_mask) == FAILURE_RETURN_VALUE)
+    {
+        // TODO forum question
+        std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
+        free_threads();
+        exit(1);
+    }
+
+    threads[new_id] = new_thread;
+    ready_threads.push(new_id);
+
+    return new_id;
 }
 
-int uthread_get_tid ()
+int uthread_terminate(int tid)
 {
-  return curr_thread_id;
+    // check tid validation
+    if (tid >= MAX_THREAD_NUM || threads[tid] == nullptr)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
+        return FAILURE_RETURN_VALUE;
+    }
+
+    // check if it's the main thread
+    // TODO err msg need??
+    if (tid == 0)
+    {
+        free_threads();
+        exit(0);
+    }
+
+    if (threads[tid]->state == READY)
+    {
+        remove_tid_from_ready_queue(tid);
+    }
+
+    if (threads[tid]->state == RUNNING) // TODO can check with curr_thread_id too
+    {
+        set_ready_to_run();
+        init_timer();
+    }
+
+    // Terminates the thread with ID tid and deletes it from all structures
+    free(threads[tid]->stack);
+    threads[tid]->stack = nullptr;
+    free(threads[tid]);
+    threads[tid] = nullptr;
+
+    //
+    min_heap_id.push(tid);
+    return SUCCESS_RETURN_VALUE;
 }
 
-int uthread_get_total_quantums ()
+int uthread_block(int tid)
 {
-
 }
 
-int uthread_get_quantums (int tid)
+int uthread_resume(int tid)
+{
+}
+//TODO: if two threads wake up in the same time there is need to mask the other signals.
+
+int uthread_sleep(int num_quantums)
+{
+}
+
+int uthread_get_tid()
+{
+    return curr_thread_id;
+}
+
+int uthread_get_total_quantums()
+{
+    return  total_quantom;
+}
+
+int uthread_get_quantums(int tid)
 {
 
 }
