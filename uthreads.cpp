@@ -9,8 +9,9 @@
 #include <unistd.h>
 #include <vector>
 #include <queue>
-
+#include <cassert>
 #include "uthreads.h"
+#include <unordered_map>
 
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
@@ -19,6 +20,7 @@ typedef void (*thread_entry_point)(void);
 #define SECOND 1000000
 #define FAILURE_RETURN_VALUE (-1)
 #define SUCCESS_RETURN_VALUE 0
+#define NOT_SLEEPING (-1)
 
 #define FULL_THREADS (-1)
 
@@ -38,7 +40,8 @@ typedef void (*thread_entry_point)(void);
 #define FULL_THREADS_ERROR_MSG "Can't create more threads."
 #define INVALID_TID_ERROR_MSG "no thread with ID tid exists."
 #define SIGEMPTYSET_ERROR_MSG "sigemptyset error."
-
+#define BOLCK_ERROR_MSG "illegal id."
+#define RESUME_ERROR_MSG " can't resume running or blocked thread"
 typedef void (*thread_entry_point)(void);
 
 typedef unsigned long address_t;
@@ -59,7 +62,7 @@ address_t translate_address(address_t addr)
 // TODO
 typedef enum
 {
-    RUNNING, READY, BLOCKED, SLEEPING
+    RUNNING, READY, BLOCKED
 } thread_state;
 
 // TODO
@@ -70,11 +73,14 @@ typedef struct Thread
     char* stack;
     int quantum; // TODO need??
     sigjmp_buf env;
+    bool sleeping_time;
 } Thread;
 
 /********************* GLOBAL VARIABLES *********************/
 
 //typedef std::vector<Thread *> threads_vector;
+//blocked threads
+std::unordered_map<int, Thread*> blocked_threads;
 // quantom vars
 int total_quantom = 0;
 int quantom_len;
@@ -126,15 +132,37 @@ int get_min_available_id()
     min_heap_id.pop();
     return min_id;
 }
+void wake_sleeping_threads()
+{
+    for(auto pair:blocked_threads)
+    {
+        Thread *cur_thread = pair.second;
+        if (cur_thread->sleeping_time == NOT_SLEEPING)
+        {
+            // todo: wake up the thread, add it to ready list - need to check if thread was resumed while sleep
+        }
+    }
 
+}
 void set_ready_to_run()
 {
-    ready_threads.push(curr_thread_id);
+    //TODO: we push here the curr_thread to ready. not always good. for exmp where the curr_thread is blocked
+    if (threads[curr_thread_id]->state == BLOCKED)
+    {
+        blocked_threads.emplace(curr_thread_id, threads[curr_thread_id]);
+    }
+    if (threads[curr_thread_id]->state == RUNNING)
+    {
+        ready_threads.push(curr_thread_id);
+    }
+
     curr_thread_id = ready_threads.front(); //TODO empty check ?
+    threads[curr_thread_id]->state = RUNNING;
     ready_threads.pop();
-
+    threads[curr_thread_id]->quantum++;
+    total_quantom++;
+    wake_sleeping_threads();
     siglongjmp(threads[curr_thread_id]->env, 1);
-
 }
 
 void timer_handler(int sig)
@@ -149,8 +177,6 @@ void timer_handler(int sig)
             set_ready_to_run();
         }
     }
-    threads[curr_thread_id] -> quantum++;
-    total_quantom++;
 }
 
 int init_timer()
@@ -226,6 +252,7 @@ int uthread_init(int quantum_usecs)
     main_thread->id = min_id;
     main_thread->state = RUNNING;
     main_thread->quantum = 1;
+    main_thread->sleeping_time = NOT_SLEEPING;
     threads[0] = main_thread;
     curr_thread_id = 0;
 
@@ -269,8 +296,9 @@ int uthread_spawn(thread_entry_point entry_point)
 
     new_thread->id = new_id;
     new_thread->state = READY;
+    new_thread->sleeping_time = NOT_SLEEPING;
     new_thread->stack = new_stack;
-    new_thread->quantum = 0 ;
+    new_thread->quantum = 0;
     address_t sp = (address_t)new_stack + STACK_SIZE - sizeof(address_t);
     address_t pc = (address_t)entry_point;
 
@@ -285,7 +313,7 @@ int uthread_spawn(thread_entry_point entry_point)
         free_threads();
         exit(1);
     }
-
+    assert(threads[new_id] == nullptr);
     threads[new_id] = new_thread;
     ready_threads.push(new_id);
 
@@ -319,6 +347,12 @@ int uthread_terminate(int tid)
         set_ready_to_run();
         init_timer();
     }
+    // if the thread was blocked remove it from the blocked map
+    auto check_blocked = blocked_threads.find(tid);
+    if (check_blocked != blocked_threads.end())
+    {
+        blocked_threads.erase(check_blocked);
+    }
 
     // Terminates the thread with ID tid and deletes it from all structures
     free(threads[tid]->stack);
@@ -333,11 +367,64 @@ int uthread_terminate(int tid)
 
 int uthread_block(int tid)
 {
+    // if the id is not legal, the id is empty, or try to block main thread, return error.
+    bool legal_id = 0 < tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
+    if (!legal_id)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
+        return EXIT_FAILURE;
+    }
+    // if the thread is already block, no action is needed
+    if (threads[tid]->state == BLOCKED)
+    {
+        return SUCCESS_RETURN_VALUE;
+    }
+    // make the ready thread run, reset the timer.
+    if (threads[tid]->state == RUNNING)
+    {
+        threads[tid]->state == BLOCKED;
+        set_ready_to_run();
+        init_timer();
+        return SUCCESS_RETURN_VALUE;
+    }
+    // if the thread was ready remove it from the ready list.
+    if (threads[tid]->state == READY)
+    {
+        remove_tid_from_ready_queue(tid);
+    }
+    // this section is the same for sleeping and ready
+    threads[tid]->state == BLOCKED;
+    blocked_threads.emplace(tid, threads[tid]);
+    //  todo: case where sleep?
+    return SUCCESS_RETURN_VALUE;
 }
 
 int uthread_resume(int tid)
 {
+    // if the id is not legal, the id is empty, or try to block main thread, return error.
+    bool legal_id = 0 < tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
+    if (!legal_id)
+    {
+        std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
+        return EXIT_FAILURE;
+    }
+        if (threads[tid]->state == RUNNING || threads[tid]->state == READY)
+    {
+        return SUCCESS_RETURN_VALUE;
+    }
+    assert(
+        (threads[tid]-> state == BLOCKED && blocked_threads.find(tid) != blocked_threads.end()) || (threads[tid]-> sleeping_time
+            != NOT_SLEEPING));
+    if (threads[tid]->state == BLOCKED)
+    {
+        threads[tid]->state == READY;
+        ready_threads.push(tid);
+        // todo:finish
+
+    }
+
 }
+
 //TODO: if two threads wake up in the same time there is need to mask the other signals.
 
 int uthread_sleep(int num_quantums)
@@ -351,10 +438,9 @@ int uthread_get_tid()
 
 int uthread_get_total_quantums()
 {
-    return  total_quantom;
+    return total_quantom;
 }
 
 int uthread_get_quantums(int tid)
 {
-
 }
