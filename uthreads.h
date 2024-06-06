@@ -126,5 +126,6 @@ int uthread_get_total_quantums();
 */
 int uthread_get_quantums(int tid);
 
+int get_min_available_id();
 
 #endif

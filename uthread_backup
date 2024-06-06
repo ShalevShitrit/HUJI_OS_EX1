@@ -13,50 +13,6 @@
 #include "uthreads.h"
 #include <unordered_map>
 
-
-#ifdef __x86_64__
-/* code for 64 bit Intel arch */
-
-typedef unsigned long address_t;
-#define JB_SP 6
-#define JB_PC 7
-
-/* A translation is required when using an address of a variable.
-   Use this as a black box in your code. */
-address_t translate_address(address_t addr)
-{
-    address_t ret;
-    asm volatile("xor    %%fs:0x30,%0\n"
-        "rol    $0x11,%0\n"
-        : "=g" (ret)
-        : "0" (addr));
-    return ret;
-}
-
-#else
-/* code for 32 bit Intel arch */
-
-typedef unsigned int address_t;
-#define JB_SP 4
-#define JB_PC 5
-
-
-/* A translation is required when using an address of a variable.
-   Use this as a black box in your code. */
-address_t translate_address(address_t addr)
-{
-    address_t ret;
-    asm volatile("xor    %%gs:0x18,%0\n"
-                 "rol    $0x9,%0\n"
-    : "=g" (ret)
-    : "0" (addr));
-    return ret;
-}
-
-
-#endif
-
-
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 typedef void (*thread_entry_point)(void);
@@ -65,9 +21,11 @@ typedef void (*thread_entry_point)(void);
 #define FAILURE_RETURN_VALUE (-1)
 #define SUCCESS_RETURN_VALUE 0
 #define NOT_SLEEPING (-1)
-#define RUNNING_TERMINATED (-1)
+
 #define FULL_THREADS (-1)
 
+#define JB_SP 6
+#define JB_PC 7
 
 //
 #define SYSTEM_ERROR_PREFIX "system error: "
@@ -84,11 +42,20 @@ typedef void (*thread_entry_point)(void);
 #define SIGEMPTYSET_ERROR_MSG "sigemptyset error."
 #define BOLCK_ERROR_MSG "illegal id."
 #define RESUME_ERROR_MSG " can't resume running or blocked thread"
-#define SLEEP_MT_ERROR_MSG "Main thread can't sleep itself."
-#define SIGADDSET_ERROR_MSG "sig add set failed."
-#define SIGPROCMASK_ERROR_MSG "sigprocmask failed."
 typedef void (*thread_entry_point)(void);
 
+typedef unsigned long address_t;
+
+//TODO need 32 and 64???
+address_t translate_address(address_t addr)
+{
+    address_t ret;
+    asm volatile("xor    %%fs:0x30,%0\n"
+        "rol    $0x11,%0\n"
+        : "=g" (ret)
+        : "0" (addr));
+    return ret;
+}
 
 /**** THREAD STRUCT ****/
 
@@ -104,7 +71,7 @@ typedef struct Thread
     unsigned int id;
     thread_state state;
     char* stack;
-    int quantum;
+    int quantum; // TODO need??
     sigjmp_buf env;
     int sleeping_time;
 } Thread;
@@ -113,31 +80,26 @@ typedef struct Thread
 
 //typedef std::vector<Thread *> threads_vector;
 //sleeping threads
-//todo
-//todo
-//todo
-//todo convert to vetor
 std::unordered_map<int, Thread*> sleeping_threads;
-
+//blocked threads
+std::unordered_map<int, Thread*> blocked_threads;
 // quantom vars
 int total_quantom = 0;
 int quantom_len;
 // all threads
 std::vector<Thread*> threads(MAX_THREAD_NUM, nullptr);
 
-sigset_t signal_set; // signal set
+// TODO init
 std::priority_queue<int, std::vector<int>, std::greater<>> min_heap_id;
 
 std::queue<int> ready_threads;
 
-
+// TODO init
 struct itimerval timer;
 
 int curr_thread_id; // (-1) if null
 
 /********************* FUNCTIONS IMPLEMENTATION *********************/
-
-int init_timer();
 
 void init_min_heap_id()
 {
@@ -148,38 +110,7 @@ void init_min_heap_id()
     }
 }
 
-void init_sig_set()
-{
-    if (sigemptyset(&signal_set) == -1)
-    {
-        std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
-        exit(1);
-    }
-    if (sigaddset(&signal_set,SIGVTALRM) == -1)
-    {
-        std::cerr << SYSTEM_ERROR_PREFIX << SIGADDSET_ERROR_MSG << std::endl;
-        exit(1);
-    }
-}
-
-void mask_timer()
-{
-    if (sigprocmask(SIG_SETMASK, &signal_set, nullptr) == -1)
-    {
-        std::cerr << SYSTEM_ERROR_PREFIX << SIGPROCMASK_ERROR_MSG << std::endl;
-        exit(1);
-    }
-}
-
-void unmask_timer()
-{
-    if (sigprocmask(SIG_UNBLOCK, &signal_set, nullptr) == -1)
-    {
-        std::cerr << SYSTEM_ERROR_PREFIX << SIGPROCMASK_ERROR_MSG << std::endl;
-        exit(1);
-    }
-}
-
+// TODO need to free stack?
 void free_threads()
 {
     for (int i = 0; i < MAX_THREAD_NUM; ++i)
@@ -206,31 +137,24 @@ int get_min_available_id()
 
 void wake_sleeping_threads()
 {
-    std::vector<int> to_delete;
     for (auto pair : sleeping_threads)
     {
         Thread* cur_thread = pair.second;
-        cur_thread->sleeping_time--;
-        if (cur_thread->sleeping_time == 0)
+        if (cur_thread->sleeping_time != NOT_SLEEPING)
         {
-            cur_thread->sleeping_time = NOT_SLEEPING;
-            to_delete.push_back(pair.first);
-            if (cur_thread->state == SLEEPING) // make sure it's not blocked
-            {
-                cur_thread->state = READY;
-                ready_threads.push(cur_thread->id);
-            }
+            // todo: wake up the thread, add it to ready list - need to check if thread was resumed while sleep
         }
-    }
-    for(auto key:to_delete)
-    {
-        sleeping_threads.erase(sleeping_threads.find(key));
     }
 }
 
 void set_ready_to_run()
 {
-    if (curr_thread_id != RUNNING_TERMINATED && threads[curr_thread_id]->state == RUNNING)
+    //TODO: we push here the curr_thread to ready. not always good. for exmp where the curr_thread is blocked
+    if (threads[curr_thread_id]->state == BLOCKED)
+    {
+        blocked_threads.emplace(curr_thread_id, threads[curr_thread_id]);
+    }
+    if (threads[curr_thread_id]->state == RUNNING)
     {
         ready_threads.push(curr_thread_id);
         threads[curr_thread_id]->state = READY;
@@ -241,11 +165,7 @@ void set_ready_to_run()
     ready_threads.pop();
     threads[curr_thread_id]->quantum++;
     total_quantom++;
-    // std::cout << "before waking up" << std::endl;
     wake_sleeping_threads();
-    // std::cout << " afterwaking up" << std::endl;
-    init_timer();
-
     siglongjmp(threads[curr_thread_id]->env, 1);
 }
 
@@ -342,30 +262,22 @@ int uthread_init(int quantum_usecs)
 
     // Initialize timer
     init_timer();
-    // initialize signal set
-    init_sig_set();
 
     return SUCCESS_RETURN_VALUE;
 }
 
 int uthread_spawn(thread_entry_point entry_point)
 {
-    mask_timer();
-    // std::cout << " current id spawn start" << curr_thread_id << std::endl;
-
     if (entry_point == nullptr)
     {
         std::cerr << LIBRARY_ERROR_PREFIX << ENTRY_POINT_ERROR_MSG << std::endl;
-        unmask_timer();
         return FAILURE_RETURN_VALUE;
     }
 
     int new_id = get_min_available_id();
-    //std::cout<<new_id<<std::endl;
     if (new_id == FULL_THREADS)
     {
         std::cerr << LIBRARY_ERROR_PREFIX << FULL_THREADS_ERROR_MSG << std::endl;
-        unmask_timer();
         return FAILURE_RETURN_VALUE;
     }
 
@@ -374,7 +286,6 @@ int uthread_spawn(thread_entry_point entry_point)
     {
         std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
         free_threads();
-        unmask_timer();
         exit(1);
     }
 
@@ -384,7 +295,6 @@ int uthread_spawn(thread_entry_point entry_point)
         free(new_stack);
         std::cerr << SYSTEM_ERROR_PREFIX << MEMORY_ERROR_MSG << std::endl;
         free_threads();
-        unmask_timer();
         exit(1);
     }
 
@@ -405,26 +315,21 @@ int uthread_spawn(thread_entry_point entry_point)
         // TODO forum question
         std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
         free_threads();
-        unmask_timer();
         exit(1);
     }
     // assert(threads[new_id] == nullptr);
     threads[new_id] = new_thread;
     ready_threads.push(new_id);
-    // std::cout << " current id spawn end" << curr_thread_id << std::endl;
-    unmask_timer();
 
     return new_id;
 }
 
 int uthread_terminate(int tid)
 {
-    mask_timer();
     // check tid validation
-    if (tid >= MAX_THREAD_NUM || tid < 0 || threads[tid] == nullptr)
+    if (tid >= MAX_THREAD_NUM || threads[tid] == nullptr)
     {
         std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
-        unmask_timer();
         return FAILURE_RETURN_VALUE;
     }
 
@@ -433,89 +338,57 @@ int uthread_terminate(int tid)
     if (tid == 0)
     {
         free_threads();
-        unmask_timer();
         exit(0);
     }
 
-    if (threads[tid]->state == READY || threads[tid]->state == BLOCKED)
+    if (threads[tid]->state == READY)
     {
-        // Terminates the thread with ID tid and deletes it from all structures
-        free(threads[tid]->stack);
-        threads[tid]->stack = nullptr;
-        free(threads[tid]);
-        threads[tid] = nullptr;
-        min_heap_id.push(tid);
-        remove_tid_from_ready_queue(tid); // relevant for READY state.
-        unmask_timer();
-
-        return SUCCESS_RETURN_VALUE;
+        remove_tid_from_ready_queue(tid);
     }
 
-    if (threads[tid]->state == SLEEPING)
+    if (threads[tid]->state == RUNNING) // TODO can check with curr_thread_id too
     {
-        sleeping_threads.erase(sleeping_threads.find(tid));
-        free(threads[tid]->stack);
-        threads[tid]->stack = nullptr;
-        free(threads[tid]);
-        threads[tid] = nullptr;
-        min_heap_id.push(tid);
-        unmask_timer();
-        return SUCCESS_RETURN_VALUE;
-    }
-
-    // std::cout<<"the id to terminate state" << (threads[tid]->state == RUNNING)<<std::endl;
-    if (threads[tid]->state == RUNNING)
-    {
-        // Terminates the thread with ID tid and deletes it from all structures
-        free(threads[tid]->stack);
-        threads[tid]->stack = nullptr;
-        free(threads[tid]);
-        threads[tid] = nullptr;
-        //std::cout << "terminated" << tid<<std::endl;
-        //
-        min_heap_id.push(tid);
-        curr_thread_id = RUNNING_TERMINATED;
         set_ready_to_run();
-
-        // init_timer();
+        init_timer();
+    }
+    // if the thread was blocked remove it from the blocked map
+    auto check_blocked = blocked_threads.find(tid);
+    if (check_blocked != blocked_threads.end())
+    {
+        blocked_threads.erase(check_blocked);
     }
 
+    // Terminates the thread with ID tid and deletes it from all structures
+    free(threads[tid]->stack);
+    threads[tid]->stack = nullptr;
+    free(threads[tid]);
+    threads[tid] = nullptr;
 
-    unmask_timer();
+    //
+    min_heap_id.push(tid);
     return SUCCESS_RETURN_VALUE;
 }
 
 int uthread_block(int tid)
 {
-    mask_timer();
     // if the id is not legal, the id is empty, or try to block main thread, return error.
     bool legal_id = 0 < tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
     if (!legal_id)
     {
         std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
-        unmask_timer();
         return EXIT_FAILURE;
     }
-    // if the thread is already block, and not sleeping
+    // if the thread is already block, no action is needed
     if (threads[tid]->state == BLOCKED)
     {
-        unmask_timer();
-        return SUCCESS_RETURN_VALUE;
-    }
-    // if blockes while sleeping
-    if (threads[tid]->state == SLEEPING)
-    {
-        threads[tid]->state = BLOCKED;
-        unmask_timer();
         return SUCCESS_RETURN_VALUE;
     }
     // make the ready thread run, reset the timer.
     if (threads[tid]->state == RUNNING)
     {
-        threads[tid]->state = BLOCKED;
+        threads[tid]->state == BLOCKED;
         set_ready_to_run(); // also add the thread to blocked map
-        // init_timer();
-        unmask_timer();
+        init_timer();
         return SUCCESS_RETURN_VALUE;
     }
     // if the thread was ready remove it from the ready list.
@@ -524,28 +397,27 @@ int uthread_block(int tid)
         remove_tid_from_ready_queue(tid);
         // this section is the same for sleeping and ready
         threads[tid]->state = BLOCKED;
-        unmask_timer();
         return SUCCESS_RETURN_VALUE;
     }
+    if (threads[tid]->state == SLEEPING)
+    {
+        blocked_threads.emplace(tid, threads[tid]);
+    }
 
-    unmask_timer();
     return SUCCESS_RETURN_VALUE;
 }
 
 int uthread_resume(int tid)
 {
-    mask_timer();
     // if the id is not legal, the id is empty, or try to block main thread, return error.
     bool legal_id = 0 < tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
     if (!legal_id)
     {
         std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
-        unmask_timer();
         return EXIT_FAILURE;
     }
     if (threads[tid]->state == RUNNING || threads[tid]->state == READY)
     {
-        unmask_timer();
         return SUCCESS_RETURN_VALUE;
     }
 
@@ -555,32 +427,23 @@ int uthread_resume(int tid)
         {
             threads[tid]->state = READY;
             ready_threads.push(tid);
+            blocked_threads.erase(blocked_threads.find(tid));
         }
         else // blocked and sleep
         {
-            threads[tid]->state = SLEEPING;
+            blocked_threads.erase(blocked_threads.find(tid));
         }
     }
-    unmask_timer();
-    return SUCCESS_RETURN_VALUE;
 }
 
 
 int uthread_sleep(int num_quantums)
 {
-    mask_timer();
-    if (curr_thread_id == 0)
-    {
-        std::cerr << SYSTEM_ERROR_PREFIX << SLEEP_MT_ERROR_MSG << std::endl;
-        unmask_timer();
-        return EXIT_FAILURE;
-    }
     threads[curr_thread_id]->sleeping_time = num_quantums;
     threads[curr_thread_id]->state = SLEEPING;
     sleeping_threads.emplace(curr_thread_id, threads[curr_thread_id]);
     set_ready_to_run();
-    unmask_timer();
-    return SUCCESS_RETURN_VALUE;
+    init_timer();
 }
 
 int uthread_get_tid()
@@ -595,10 +458,5 @@ int uthread_get_total_quantums()
 
 int uthread_get_quantums(int tid)
 {
-    bool legal_id = 0 <= tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
-    if (legal_id)
-    {
-        return threads[tid]->quantum;
-    }
-    return FAILURE_RETURN_VALUE;
+    return threads[tid]->quantum;
 }

@@ -84,13 +84,7 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_itimer.c">
-			<Option target="HUJI_OS_EX1"/>
-		</Unit>
-		<Unit filename="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_jmp.c">
-			<Option target="HUJI_OS_EX1"/>
-		</Unit>
-		<Unit filename="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_singInt_handler.c">
+		<Unit filename="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/ex2_test.cpp">
 			<Option target="HUJI_OS_EX1"/>
 		</Unit>
 		<Unit filename="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/uthreads.cpp">

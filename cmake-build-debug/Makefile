@@ -123,86 +123,32 @@ HUJI_OS_EX1/fast:
 	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/build
 .PHONY : HUJI_OS_EX1/fast
 
-demo_itimer.o: demo_itimer.c.o
+ex2_test.o: ex2_test.cpp.o
 
-.PHONY : demo_itimer.o
-
-# target to build an object file
-demo_itimer.c.o:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o
-.PHONY : demo_itimer.c.o
-
-demo_itimer.i: demo_itimer.c.i
-
-.PHONY : demo_itimer.i
-
-# target to preprocess a source file
-demo_itimer.c.i:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.i
-.PHONY : demo_itimer.c.i
-
-demo_itimer.s: demo_itimer.c.s
-
-.PHONY : demo_itimer.s
-
-# target to generate assembly for a file
-demo_itimer.c.s:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.s
-.PHONY : demo_itimer.c.s
-
-demo_jmp.o: demo_jmp.c.o
-
-.PHONY : demo_jmp.o
+.PHONY : ex2_test.o
 
 # target to build an object file
-demo_jmp.c.o:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o
-.PHONY : demo_jmp.c.o
+ex2_test.cpp.o:
+	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o
+.PHONY : ex2_test.cpp.o
 
-demo_jmp.i: demo_jmp.c.i
+ex2_test.i: ex2_test.cpp.i
 
-.PHONY : demo_jmp.i
-
-# target to preprocess a source file
-demo_jmp.c.i:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.i
-.PHONY : demo_jmp.c.i
-
-demo_jmp.s: demo_jmp.c.s
-
-.PHONY : demo_jmp.s
-
-# target to generate assembly for a file
-demo_jmp.c.s:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.s
-.PHONY : demo_jmp.c.s
-
-demo_singInt_handler.o: demo_singInt_handler.c.o
-
-.PHONY : demo_singInt_handler.o
-
-# target to build an object file
-demo_singInt_handler.c.o:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o
-.PHONY : demo_singInt_handler.c.o
-
-demo_singInt_handler.i: demo_singInt_handler.c.i
-
-.PHONY : demo_singInt_handler.i
+.PHONY : ex2_test.i
 
 # target to preprocess a source file
-demo_singInt_handler.c.i:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.i
-.PHONY : demo_singInt_handler.c.i
+ex2_test.cpp.i:
+	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.i
+.PHONY : ex2_test.cpp.i
 
-demo_singInt_handler.s: demo_singInt_handler.c.s
+ex2_test.s: ex2_test.cpp.s
 
-.PHONY : demo_singInt_handler.s
+.PHONY : ex2_test.s
 
 # target to generate assembly for a file
-demo_singInt_handler.c.s:
-	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.s
-.PHONY : demo_singInt_handler.c.s
+ex2_test.cpp.s:
+	$(MAKE) -f CMakeFiles/HUJI_OS_EX1.dir/build.make CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.s
+.PHONY : ex2_test.cpp.s
 
 uthreads.o: uthreads.cpp.o
 
@@ -240,15 +186,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... HUJI_OS_EX1"
-	@echo "... demo_itimer.o"
-	@echo "... demo_itimer.i"
-	@echo "... demo_itimer.s"
-	@echo "... demo_jmp.o"
-	@echo "... demo_jmp.i"
-	@echo "... demo_jmp.s"
-	@echo "... demo_singInt_handler.o"
-	@echo "... demo_singInt_handler.i"
-	@echo "... demo_singInt_handler.s"
+	@echo "... ex2_test.o"
+	@echo "... ex2_test.i"
+	@echo "... ex2_test.s"
 	@echo "... uthreads.o"
 	@echo "... uthreads.i"
 	@echo "... uthreads.s"

@@ -57,48 +57,9 @@ include CMakeFiles/HUJI_OS_EX1.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/HUJI_OS_EX1.dir/flags.make
 
-CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o: CMakeFiles/HUJI_OS_EX1.dir/flags.make
-CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o: ../demo_itimer.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o   -c "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_itimer.c"
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_itimer.c" > CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.i
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_itimer.c" -o CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.s
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o: CMakeFiles/HUJI_OS_EX1.dir/flags.make
-CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o: ../demo_jmp.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o   -c "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_jmp.c"
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_jmp.c" > CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.i
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_jmp.c" -o CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.s
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o: CMakeFiles/HUJI_OS_EX1.dir/flags.make
-CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o: ../demo_singInt_handler.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o   -c "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_singInt_handler.c"
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_singInt_handler.c" > CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.i
-
-CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/demo_singInt_handler.c" -o CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.s
-
 CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o: CMakeFiles/HUJI_OS_EX1.dir/flags.make
 CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o: ../uthreads.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o -c "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/uthreads.cpp"
 
 CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.i: cmake_force
@@ -109,23 +70,32 @@ CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/uthreads.cpp" -o CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.s
 
+CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o: CMakeFiles/HUJI_OS_EX1.dir/flags.make
+CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o: ../ex2_test.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o -c "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/ex2_test.cpp"
+
+CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/ex2_test.cpp" > CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.i
+
+CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/ex2_test.cpp" -o CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.s
+
 # Object files for target HUJI_OS_EX1
 HUJI_OS_EX1_OBJECTS = \
-"CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o" \
-"CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o" \
-"CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o" \
-"CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o"
+"CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o" \
+"CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o"
 
 # External object files for target HUJI_OS_EX1
 HUJI_OS_EX1_EXTERNAL_OBJECTS =
 
-HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o
-HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/demo_jmp.c.o
-HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o
 HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o
+HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o
 HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/build.make
 HUJI_OS_EX1: CMakeFiles/HUJI_OS_EX1.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable HUJI_OS_EX1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable HUJI_OS_EX1"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/HUJI_OS_EX1.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
