@@ -6,6 +6,22 @@
 
 #IncludeRegexTransform: 
 
+/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/ex2_test.cpp
+unistd.h
+-
+assert.h
+-
+stdio.h
+-
+sys/time.h
+-
+csignal
+-
+iostream
+-
+uthreads.h
+/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/uthreads.h
+
 /mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/uthreads.cpp
 stdio.h
 -

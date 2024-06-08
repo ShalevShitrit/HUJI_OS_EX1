@@ -126,7 +126,7 @@ int quantom_len;
 std::vector<Thread*> threads(MAX_THREAD_NUM, nullptr);
 
 sigset_t signal_set; // signal set
-std::priority_queue<int, std::vector<int>, std::greater<>> min_heap_id;
+std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap_id;
 
 std::queue<int> ready_threads;
 
@@ -245,7 +245,6 @@ void set_ready_to_run()
     wake_sleeping_threads();
     // std::cout << " afterwaking up" << std::endl;
     init_timer();
-
     siglongjmp(threads[curr_thread_id]->env, 1);
 }
 
@@ -571,14 +570,21 @@ int uthread_sleep(int num_quantums)
     mask_timer();
     if (curr_thread_id == 0)
     {
-        std::cerr << SYSTEM_ERROR_PREFIX << SLEEP_MT_ERROR_MSG << std::endl;
+        std::cerr << LIBRARY_ERROR_PREFIX << SLEEP_MT_ERROR_MSG << std::endl;
         unmask_timer();
-        return EXIT_FAILURE;
+        return FAILURE_RETURN_VALUE;
     }
-    threads[curr_thread_id]->sleeping_time = num_quantums;
-    threads[curr_thread_id]->state = SLEEPING;
-    sleeping_threads.emplace(curr_thread_id, threads[curr_thread_id]);
-    set_ready_to_run();
+    // Save the current state, including the program counter
+    int ret_val = sigsetjmp(threads[curr_thread_id]->env, 1);
+    bool did_just_save_bookmark = ret_val == 0;
+
+    if (did_just_save_bookmark)
+    {
+        threads[curr_thread_id]->sleeping_time = num_quantums;
+        threads[curr_thread_id]->state = SLEEPING;
+        sleeping_threads.emplace(curr_thread_id, threads[curr_thread_id]);
+        set_ready_to_run();
+    }
     unmask_timer();
     return SUCCESS_RETURN_VALUE;
 }

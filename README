@@ -1,4 +1,14 @@
-# HUJI_OS_EX1
+omerdahan, shalevshitrit
+Omer Dahan 315466664 , Shalev Shitrit 314825597
+EX: 1
+
+FILES:
+uthreads.cpp -- source code for the library.
+uthreads.h -- headers file for the library.
+Makefile --  a make file for crating the static library.
+README -- a file with all the answers to the theoretical questions.
+
+Amswers:
 
 # QUESTION 1
 
