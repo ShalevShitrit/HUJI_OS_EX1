@@ -1,33 +1,32 @@
-CC=g++
-CXX=g++
-RANLIB=ranlib
+C_COMPILER=g++
+CXX_COMPILER=g++
+ARCHIVER=ar
 
-LIBSRC=uthreads.cpp
-LIBOBJ=$(LIBSRC:.cpp=.o)
+SOURCE_FILES=uthreads.cpp
+OBJECT_FILES=$(SOURCE_FILES:.cpp=.o)
 
-INCS=-I.
-CFLAGS = -Wall -std=c++11 -g $(INCS)
-CXXFLAGS = -Wall -std=c++11 -g $(INCS)
+INCLUDE_PATHS=-I.
+C_COMPILER_FLAGS = -Wall -std=c++11 -g $(INCLUDE_PATHS)
+CXX_COMPILER_FLAGS = -Wall -std=c++11 -g $(INCLUDE_PATHS)
 
-OSMLIB = libuthreads.a
-TARGETS = $(OSMLIB)
+STATIC_LIB = libuthreads.a
+BUILD_TARGETS = $(STATIC_LIB)
 
-TAR=tar
-TARFLAGS=-cvf
-TARNAME = ex2.tar
-TARSRCS=$(LIBSRC) Makefile README
+TAR_COMMAND=tar
+TAR_OPTIONS=-cvf
+TAR_FILE_NAME = ex2.tar
+TAR_SOURCE_FILES=$(SOURCE_FILES) Makefile README
 
-all: $(TARGETS)
+all: $(BUILD_TARGETS)
 
-$(TARGETS): $(LIBOBJ)
-	$(AR) $(ARFLAGS) $@ $^
-	$(RANLIB) $@
+$(BUILD_TARGETS): $(OBJECT_FILES)
+	$(ARCHIVER) rcs $@ $^
 
 clean:
-	$(RM) $(TARGETS) $(OSMLIB) $(OBJ) $(LIBOBJ) *~ *core
+	$(RM) $(BUILD_TARGETS) $(OBJECT_FILES) *~ *core
 
 depend:
-	makedepend -- $(CFLAGS) -- $(SRC) $(LIBSRC)
+	makedepend -- $(C_COMPILER_FLAGS) -- $(SOURCE_FILES)
 
 tar:
-	$(TAR) $(TARFLAGS) $(TARNAME) $(TARSRCS)
+	$(TAR_COMMAND) $(TAR_OPTIONS) $(TAR_FILE_NAME) $(TAR_SOURCE_FILES)
