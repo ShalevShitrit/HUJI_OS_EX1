@@ -3,14 +3,14 @@ Omer Dahan (315466664), Shalev Shitrit (314825597)
 EX: 2
 
 FILES:
+README -- a file with all the answers to the theoretical questions.
+Makefile -- a make file for crating the static library.
 uthreads.cpp -- source code for the library.
 uthreads.h -- headers file for the library.
-Makefile -- a make file for crating the static library.
-README -- a file with all the answers to the theoretical questions.
 
-Amswers:
+Answers:
 
-# QUESTION 1
+Q1:
 
 PART A
 
@@ -30,7 +30,7 @@ In sigsetjmp, the savesigs parameter determines whether to save the signal mask.
 mask isn't saved. If it's non-zero, the signal mask is saved.
 If the signal mask was saved in sigsetjmp, then siglongjmp will also restore it when called.
 
-# QUESTION 2
+Q2:
 
 For a web server, handling multiple requests together is crucial. We can assign a thread to each request, allowing us
 to manage them concurrently. This setup offers flexibility in scheduling threads based on priority if needed. Since
@@ -38,7 +38,7 @@ requests mainly involve computational tasks like loading and sending files, the 
 to I/O operations is low. Moreover, user-level threads provide low overhead during context switching, enhancing the
 server's responsiveness.
 
-# QUESTION 3
+Q3:
 
 ADVANTAGES
 
@@ -56,7 +56,7 @@ DISADVANTAGES
 - Slow Process Creation: Creating a new process is generally slower than creating a new thread, leading to higher
   overhead in setting up new memory spaces and resources.
 
-# QUESTION 4
+Q4:
 
 When typing the kill command in the shell with the PID of Shotwell (90757), several interrupts and signals occur.
 Firstly, each character typed on the keyboard generates an external interrupt, which the operating system handles and
@@ -66,7 +66,7 @@ Upon activation, the operating system sends a SIGTERM signal to the process with
 initiating termination.
 If Shotwell hasn't defined a custom handler for the SIGTERM signal, the kernel terminates the process.
 
-# QUESTION 5
+Q5:
 
 'Real Time' refers to the actual elapsed time from the start to the completion of a process, as measured by a clock.
 'Virtual Time' refers to the time a process spends actively executing on the CPU, excluding any waiting periods or
