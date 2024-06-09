@@ -6,7 +6,6 @@ FILES:
 README -- a file with all the answers to the theoretical questions.
 Makefile -- a make file for crating the static library.
 uthreads.cpp -- source code for the library.
-uthreads.h -- headers file for the library.
 
 Answers:
 
