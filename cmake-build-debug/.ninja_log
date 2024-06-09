@@ -1,4 +1,2 @@
 # ninja log v5
-0	349	1717517169001526464	CMakeFiles/HUJI_OS_EX1.dir/demo_itimer.c.o	2711c45dc1a4ea74
 2	350	1717517169004164989	CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o	d36a814d2388b433
-1	354	1717517169004935829	CMakeFiles/HUJI_OS_EX1.dir/demo_singInt_handler.c.o	3f92da7ea2dd2db6

@@ -70,7 +70,6 @@ address_t translate_address(address_t addr)
 #define MAX_THREAD_NUM 100 /* Maximum number of threads */
 #define STACK_SIZE 4096 /* Stack size per thread (in bytes) */
 
-// TODO check returns value
 #define SECOND 1000000 /* One second in microseconds */
 #define SUCCESS_RETURN_VALUE 0
 #define FAILURE_RETURN_VALUE (-1)
@@ -81,7 +80,6 @@ address_t translate_address(address_t addr)
 #define SYSTEM_ERROR_PREFIX "system error: "
 #define LIBRARY_ERROR_PREFIX "thread library error: "
 
-// TODO check errors messages type (system or library)
 /* System errors messages */
 #define MEMORY_ERROR_MSG "Memory allocation failed."
 #define SIGACTION_ERROR_MSG "Error in sigaction."
@@ -175,6 +173,8 @@ int curr_thread_id;
  */
 int init_timer ();
 
+void
+set_new_thread (thread_entry_point entry_point, int new_id, char *new_stack, Thread *new_thread);
 /**
  * @brief Initialize the min-heap of available thread IDs.
  */
@@ -190,15 +190,14 @@ void init_min_heap_id ()
 /**
  * @brief Initialize the signal set for SIGVTALRM.
  */
-// TODO check unreachable code
 void init_sig_set ()
 {
-  if (sigemptyset(&signal_set) == -1)
+  if (sigemptyset(&signal_set) == FAILURE_RETURN_VALUE)
   {
     std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
     exit (1);
   }
-  if (sigaddset(&signal_set, SIGVTALRM) == -1)
+  if (sigaddset(&signal_set, SIGVTALRM) == FAILURE_RETURN_VALUE)
   {
     std::cerr << SYSTEM_ERROR_PREFIX << SIGADDSET_ERROR_MSG << std::endl;
     exit (1);
@@ -299,7 +298,7 @@ void set_ready_to_run ()
     ready_threads.push (curr_thread_id);
     threads[curr_thread_id]->state = READY;
   }
-  curr_thread_id = ready_threads.front (); //TODO empty check
+  curr_thread_id = ready_threads.front (); // Main is never sleep or blocked
   threads[curr_thread_id]->state = RUNNING;
   ready_threads.pop ();
   threads[curr_thread_id]->quantum++;
@@ -374,6 +373,43 @@ void remove_tid_from_ready_queue (const int &tid)
     ready_threads.pop ();
   }
   std::swap (ready_threads, temp_queue);
+}
+
+/**
+ * @brief Initialize a new thread with the given parameters.
+ *
+ * This function sets up a new thread by initializing its attributes such as ID, state,
+ * stack pointer, program counter, and environment buffer for context switching.
+ *
+ * @param entry_point Function pointer representing the thread's entry point.
+ * @param new_id Integer representing the new thread's ID.
+ * @param new_stack Pointer to the allocated stack memory for the new thread.
+ * @param new_thread Pointer to the Thread structure to be initialized.
+ */
+void set_new_thread (thread_entry_point entry_point, int new_id,
+                     char *new_stack, Thread *new_thread)
+{
+  new_thread->id = new_id;
+  new_thread->state = READY;
+  new_thread->sleeping_time = NOT_SLEEPING;
+  new_thread->stack = new_stack;
+  new_thread->quantum = 0;
+  address_t sp = (address_t) new_stack + STACK_SIZE - sizeof (address_t);
+  address_t pc = (address_t) entry_point;
+
+  // Save the current state, including the stack pointer and program counter
+  sigsetjmp (new_thread->env, 1);
+  (new_thread->env->__jmpbuf)[JB_SP] = translate_address (sp);
+  (new_thread->env->__jmpbuf)[JB_PC] = translate_address (pc);
+
+  // Initialize the signal mask for the new thread
+  if (sigemptyset(&new_thread->env->__saved_mask) == FAILURE_RETURN_VALUE)
+  {
+    std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
+    free_threads ();
+    unmask_timer ();
+    exit (1);
+  }
 }
 
 /**
@@ -463,25 +499,7 @@ int uthread_spawn (thread_entry_point entry_point)
     exit (1);
   }
 
-  new_thread->id = new_id;
-  new_thread->state = READY;
-  new_thread->sleeping_time = NOT_SLEEPING;
-  new_thread->stack = new_stack;
-  new_thread->quantum = 0;
-  address_t sp = (address_t) new_stack + STACK_SIZE - sizeof (address_t);
-  address_t pc = (address_t) entry_point;
-
-  sigsetjmp (new_thread->env, 1);
-  (new_thread->env->__jmpbuf)[JB_SP] = translate_address (sp);
-  (new_thread->env->__jmpbuf)[JB_PC] = translate_address (pc);
-
-  if (sigemptyset(&new_thread->env->__saved_mask) == FAILURE_RETURN_VALUE)
-  {
-    std::cerr << SYSTEM_ERROR_PREFIX << SIGEMPTYSET_ERROR_MSG << std::endl;
-    free_threads ();
-    unmask_timer ();
-    exit (1);
-  }
+  set_new_thread (entry_point, new_id, new_stack, new_thread);
   threads[new_id] = new_thread;
   ready_threads.push (new_id);
   unmask_timer ();
@@ -507,7 +525,6 @@ int uthread_terminate (int tid)
   }
 
   // Check if it's the main thread
-  // TODO error message is needed?
   if (tid == 0)
   {
     free_threads ();
@@ -565,6 +582,7 @@ int uthread_terminate (int tid)
  */
 int uthread_block (int tid)
 {
+  // TODO save state like sleep
   mask_timer ();
 
   bool legal_id = 0 < tid && tid < MAX_THREAD_NUM && threads[tid] != nullptr;
@@ -572,7 +590,7 @@ int uthread_block (int tid)
   {
     std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
     unmask_timer ();
-    return EXIT_FAILURE;
+    return FAILURE_RETURN_VALUE;
   }
 
   // Handle blocked and not sleeping thread
@@ -590,6 +608,7 @@ int uthread_block (int tid)
     return SUCCESS_RETURN_VALUE;
   }
 
+  // Handle running thread
   if (threads[tid]->state == RUNNING)
   {
     threads[tid]->state = BLOCKED;
@@ -598,6 +617,7 @@ int uthread_block (int tid)
     return SUCCESS_RETURN_VALUE;
   }
 
+  // Handle ready thread
   if (threads[tid]->state == READY)
   {
     remove_tid_from_ready_queue (tid);
@@ -623,7 +643,7 @@ int uthread_resume (int tid)
   {
     std::cerr << LIBRARY_ERROR_PREFIX << INVALID_TID_ERROR_MSG << std::endl;
     unmask_timer ();
-    return EXIT_FAILURE;
+    return FAILURE_RETURN_VALUE;
   }
   if (threads[tid]->state == RUNNING || threads[tid]->state == READY)
   {
@@ -643,6 +663,7 @@ int uthread_resume (int tid)
       threads[tid]->state = SLEEPING;
     }
   }
+
   unmask_timer ();
   return SUCCESS_RETURN_VALUE;
 }

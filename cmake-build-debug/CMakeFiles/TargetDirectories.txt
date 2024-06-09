@@ -1,3 +1,3 @@
-/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/edit_cache.dir
-/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/HUJI_OS_EX1.dir
+/Users/shalevshitrit/Documents/GitHub/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/HUJI_OS_EX1.dir
+/Users/shalevshitrit/Documents/GitHub/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/shalevshitrit/Documents/GitHub/HUJI_OS_EX1/cmake-build-debug/CMakeFiles/rebuild_cache.dir

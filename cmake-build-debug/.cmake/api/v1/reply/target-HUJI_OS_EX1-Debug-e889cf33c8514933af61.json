@@ -42,7 +42,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g  "
+					"fragment" : "-g -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -fcolor-diagnostics"
 				},
 				{
 					"fragment" : "-std=gnu++14"
@@ -52,10 +52,18 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/mnt/c/Users/omer1/Desktop/degree/year 2/sem 2/OS/HUJI_OS_EX1/."
+					"path" : "/Users/shalevshitrit/Documents/GitHub/HUJI_OS_EX1/."
 				}
 			],
 			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "14"
+			},
 			"sourceIndexes" : 
 			[
 				0,

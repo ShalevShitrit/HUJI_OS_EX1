@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/HUJI_OS_EX1.dir/uthreads.cpp.o CMakeFiles/HUJI_OS_EX1.dir/ex2_test.cpp.o  -o HUJI_OS_EX1 
